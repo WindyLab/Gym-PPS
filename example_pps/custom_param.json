@@ -1,0 +1,8 @@
+{
+    "dynamics_mode": "Polar",
+    "n_p": 3,
+    "n_e": 10,
+    "pursuer_strategy": "random",
+    "escaper_strategy": "nearest",
+    "is_periodic": true
+}
