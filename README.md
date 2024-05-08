@@ -42,8 +42,6 @@ A simulation window will pop up as follows:
   </tr>
 </table>
 
-![sample environment gif](example_pps/sample.gif)
-
 To customize the parameters of the environment, such as the number of predators and the dynamics mode, you can easily specify the desired values in the `custom_param.json` file, as shown below:
 
 ```json
