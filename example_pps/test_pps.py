@@ -29,7 +29,7 @@ if __name__ == '__main__':
     print(f"Observation space shape is {s.shape} ")
     
     for _ in range(1):
-        for step in range(500):
+        for step in range(1000):
             env.render( mode='human' )
 
             # To separately control 

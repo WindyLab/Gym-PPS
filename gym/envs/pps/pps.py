@@ -296,8 +296,6 @@ class PredatorPreySwarmEnv(PredatorPreySwarmEnvProp):
                 a[0, self._n_p:self._n_pe] *= self._angle_e_max
                 a[1, :self._n_p] =          (self._linAcc_p_max-self._linAcc_p_min)/2 * a[1,:self._n_p] +          (self._linAcc_p_max+self._linAcc_p_min)/2 
                 a[1, self._n_p:self._n_pe] = (self._linAcc_e_max-self._linAcc_e_min)/2 * a[1,self._n_p:self._n_pe] + (self._linAcc_e_max+self._linAcc_e_min)/2 
-
-            # self._d_b2b_center, self.d_b2b_edge, self._is_collide_b2b = self._get_dist_b2b()
             self._d_b2b_center, self.d_b2b_edge, self._is_collide_b2b = get_dist_b2b(self._p, self._L, self._is_periodic, self._sizes)
             sf_b2b_all = np.zeros((2*self._n_peo, self._n_peo)) 
             for i in range(self._n_peo):
@@ -312,7 +310,6 @@ class PredatorPreySwarmEnv(PredatorPreySwarmEnvProp):
             sf_b2b = np.sum(sf_b2b_all, axis=1, keepdims=True).reshape(self._n_peo,2).T   
 
             if self._is_periodic == False:
-                # self.d_b2w, self.is_collide_b2w = self._get_dist_b2w()
                 self.d_b2w, self.is_collide_b2w = get_dist_b2w(self._p, self._size, self._L)
                 sf_b2w = np.array([[1, 0, -1, 0], [0, -1, 0, 1]]).dot(self.is_collide_b2w * self.d_b2w) * self._k_wall   
                 df_b2w = np.array([[-1, 0, -1, 0], [0, -1, 0, -1]]).dot(self.is_collide_b2w*np.concatenate((self._dp, self._dp), axis=0))  *  self._c_wall   

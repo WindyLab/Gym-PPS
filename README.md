@@ -3,7 +3,16 @@ Gym-PPS is a lightweight Predator-Prey Swarm environment seamlessly integrated i
 Gym-PPS appears  first in the paper 
 
 ```text
-Li J, Li L, Zhao S. "Predator–prey survival pressure is sufficient to evolve swarming behaviors", New Journal of Physics, vol. 25, no. 9, pp. 092001, 2023.
+@article{li2023predator,
+  title={Predator--prey survival pressure is sufficient to evolve swarming behaviors},
+  author={Li, Jianan and Li, Liang and Zhao, Shiyu},
+  journal={New Journal of Physics},
+  volume={25},
+  number={9},
+  pages={092001},
+  year={2023},
+  publisher={IOP Publishing}
+}
 ```
 
 Please note that the current version of Gym-PPS supports Python 3.8. Therefore, it is recommended to run the library within a Python 3.8 environment, which can be easily set up using a virtual environment such as `venv`.
@@ -20,6 +29,9 @@ To quick start, run the following test example:
 cd example_pps
 python test_pps.py
 ```
+A simulation window will pop up:
+<img src = "sample.gif" width=250>
+
 
 To customize the parameters of the environment, such as the number of predators and the dynamics mode, you can easily specify the desired values in the `custom_param.json` file, as shown below:
 
