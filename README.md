@@ -1,6 +1,6 @@
 ## Gym-PPS
 
-[![GitLab last commit](https://badgen.net/gitlab/last-commit/NickBusey/HomelabOS/)](https://github.com/WestlakeIntelligentRobotics/Gym-PPS/-/commits) [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity) [![Citation Badge](https://api.juleskreuer.eu/citation-badge.php?doi=10.1088/1367-2630/acf33a)](https://juleskreuer.eu/citation-badge/)
+[![GitLab last commit](https://badgen.net/gitlab/last-commit/NickBusey/HomelabOS/)](https://github.com/WestlakeIntelligentRobotics/Gym-PPS/commits) [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity) [![Citation Badge](https://api.juleskreuer.eu/citation-badge.php?doi=10.1088/1367-2630/acf33a)](https://juleskreuer.eu/citation-badge/)
 
 Gym-PPS is a lightweight Predator-Prey Swarm environment seamlessly integrated into the standard Gym library. Its purpose is to provide a convenient platform for rapidly testing reinforcement learning algorithms and control algorithms utilized in guidance, swarming, or formation tasks.
 
