@@ -30,7 +30,18 @@ cd example_pps
 python test_pps.py
 ```
 
-A simulation window will pop up:
+A simulation window will pop up as follows:
+<table>
+  <tr>
+    <td><img src="example_pps/sample1.gif" width="50%" alt="Cartesian"/></td>
+    <td><img src="example_pps/sample2.gif" width="50%" alt="Polar"/></td>
+  </tr>
+  <tr>
+    <td align="center">Cartesian</td>
+    <td align="center">Polar</td>
+  </tr>
+</table>
+
 ![sample environment gif](example_pps/sample.gif)
 
 To customize the parameters of the environment, such as the number of predators and the dynamics mode, you can easily specify the desired values in the `custom_param.json` file, as shown below:

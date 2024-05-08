@@ -1,7 +1,7 @@
 {
-    "dynamics_mode": "Polar",
+    "dynamics_mode": "Cartesian",
     "n_p": 3,
-    "n_e": 20,
+    "n_e": 3,
     "pursuer_strategy": "nearest",
     "escaper_strategy": "random",
     "is_periodic": true
