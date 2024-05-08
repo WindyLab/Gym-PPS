@@ -30,7 +30,7 @@ cd example_pps
 python test_pps.py
 ```
 A simulation window will pop up:
-![](sample.gif)
+![](https://github.com/WestlakeIntelligentRobotics/Gym-PPS/blob/main/example_pps/sample.gif)
 
 
 To customize the parameters of the environment, such as the number of predators and the dynamics mode, you can easily specify the desired values in the `custom_param.json` file, as shown below:
