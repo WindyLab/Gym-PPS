@@ -33,8 +33,8 @@ python test_pps.py
 A simulation window will pop up as follows:
 <table>
   <tr>
-    <td><img src="example_pps/sample1.gif" width="50%" alt="Cartesian"/></td>
-    <td><img src="example_pps/sample2.gif" width="50%" alt="Polar"/></td>
+    <td><img src="example_pps/sample1.gif" width="100%" alt="Cartesian"/></td>
+    <td><img src="example_pps/sample2.gif" width="100%" alt="Polar"/></td>
   </tr>
   <tr>
     <td align="center">Cartesian</td>
