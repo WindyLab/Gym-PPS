@@ -258,9 +258,9 @@ class PredatorPreySwarmEnv(PredatorPreySwarmEnvProp):
 
 
     def _get_done(self):
-        # all_done = np.zeros( (1, self._n_pe) ).astype(bool)
-        # return all_done
-        return False
+        all_done = np.zeros( (1, self._n_pe) ).astype(bool)
+        return all_done
+        # return False
 
 
     def _get_info(self):
