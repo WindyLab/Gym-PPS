@@ -126,6 +126,15 @@ class MyReward(gym.RewardWrapper):
         return reward
 ```
 
+Then you should add the following wrappers in your file which creates environment to customize observations and reward functions 
+```python
+env = MyReward(MyObs(env)) 
+``` 
+
+## Train Models
+To train your own network, run `main.py` in NJP_algorithm folder. You can also customize your enviroment using the methods provided.
+
+Then your models will be loaded in models folder. To visualize your models effect, run `testmodel.py` in NJP_algorithm folder.
 
 
 ## Parameter List
