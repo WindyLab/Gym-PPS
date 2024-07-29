@@ -1,0 +1,22 @@
+{
+    "dynamics_mode": "Polar",
+    "n_p": 0,
+    "n_e": 50,
+    "pursuer_strategy": "input",
+    "escaper_strategy": "input",
+    "is_periodic": true,
+    "render_traj": true,
+    "traj_len": 15,
+    "billiards_mode": false,
+    "size_p": 0.06,
+    "size_e": 0.035,
+    "size_o": 0.2,
+    "topo_n_p2p": 2,
+    "topo_n_p2e": 5,
+    "topo_n_e2p": 2,
+    "topo_n_e2e": 5,
+    "penalize_control_effort": true,
+    "penalize_collide_walls": false,
+    "penalize_collide_agents": false,
+    "penalize_collide_obstacles": true
+}
