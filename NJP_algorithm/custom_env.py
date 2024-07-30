@@ -12,7 +12,7 @@ class MyObs(gym.ObservationWrapper):
 
     def __init__(self, env):
         super().__init__(env)
-        self.observation_space = spaces.Box(shape=(55,env.n_p+env.n_e), low=-np.inf, high=np.inf)
+        self.observation_space = spaces.Box(shape=(7+2*(env.topo_n_p2p+env.topo_n_p2e+env.topo_n_e2p+env.topo_n_e2e),env.n_p+env.n_e), low=-np.inf, high=np.inf)
 
     def observation(self, obs):
         r"""Example::
