@@ -163,7 +163,8 @@ Below is a list of the parameters that can be customized:
 | size_e                  | size of prey                                              | 0.035         |
 | render_traj             | whether to render trajectories                            | True          |
 
-
+## Acknowledgements
+This algorithm framework was constructed based on the one from https://github.com/shariqiqbal2810/maddpg-pytorch. We utilized the MADDPG class there to implement multi-agent reinforcement learning.
 
 ## Paper  [![Download as PDF Button](https://camo.githubusercontent.com/4b7e2df20c344127c85b210653959ea7cd2ddb1c1862f27c715cd460703e76d3/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f446f776e6c6f616425323061732532305044462d4546333933393f7374796c653d666c6174266c6f676f3d61646f62656163726f626174726561646572266c6f676f436f6c6f723d776869746526636f6c6f723d626c61636b266c6162656c436f6c6f723d656331633234)](https://iopscience.iop.org/article/10.1088/1367-2630/acf33a)
 
