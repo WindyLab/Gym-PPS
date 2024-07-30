@@ -42,9 +42,6 @@ def run(config):
     custom_param = 'custom_param.json'  
     custom_param = os.path.dirname(os.path.realpath(__file__)) + '/' + custom_param
     env = NJP(base_env, custom_param)
-    print(args.is_periodic)
-    # print(env.size_e)
-    # print(env.size_o)
     start_stop_num=[slice(0,env.num_predator),slice(env.num_predator, env.num_predator+env.num_prey)]   
 
     maddpg = MADDPG.init_from_env(env, agent_alg=config.agent_alg,
@@ -67,10 +64,6 @@ def run(config):
 
     explr_pct_remaining = 0.1
 
-    # print("num in pol:", env.observation_space.shape[0])
-    # print("num out pol:", env.action_space.shape[0])
-    # print("num in critic:", env.observation_space.shape[0] + env.action_space.shape[0])
-
     print('Training Starts...')
     for ep_i in range(0, config.n_episodes, config.n_rollout_threads):
         if ep_i % 10 == 0:
@@ -89,15 +82,13 @@ def run(config):
 
         p_store = np.zeros((M_p, N_p, config.episode_length))       
         h_store = np.zeros((M_h, N_h, config.episode_length))
-
-        # print("obs_original", obs.shape)
         
         for et_i in range(config.episode_length):
             if ep_i % 50 == 0:
                 env.render()
             
             # for i, species in enumerate(num_agent):
-            # 获取 observation for per agent and convert to torch variable
+            # Obtain observation for per agent and convert to torch variable
 
             p_store[:, :, et_i] = env.p             
             h_store[:, :, et_i] = env.heading
@@ -105,26 +96,16 @@ def run(config):
             torch_obs = torch.Tensor(obs).requires_grad_(False)  
             torch_agent_actions = maddpg.step(torch_obs, start_stop_num,  explore=True) 
             # convert actions to numpy.arrays
-            # print("agent_action", torch_agent_actions)
             agent_actions = np.column_stack([ac.data.numpy() for ac in torch_agent_actions])
-            # print("agent action column", agent_actions.shape)
-
-            # 对 episode 的每一步都设计一个 action 出来
-            # actions = [[ac[i] for ac in agent_actions] for i in range(config.n_rollout_threads)]   
+            
             # obtain  reward and next state
             next_obs, rewards, dones, infos = env.step(agent_actions)    
-            # print("next obs", next_obs.shape, "rewards", rewards.shape, "dones", dones.shape)
             agent_buffer.push(obs, agent_actions, rewards, next_obs, dones)
             adversary_buffer.push(obs, agent_actions, rewards, next_obs, dones)  
-            # print("et_i", et_i,  "obs", obs,  "buffer_store", agent_buffer.obs_buffs)
             obs = next_obs  
-            t += config.n_rollout_threads   
-            # replay buffer 的大小需要大于 batch size    
-            # if (len(agent_buffer) >= agent_buffer.num_agents * config.batch_size and len(adversary_buffer) >= adversary_buffer.num_agents * config.batch_size): 
-
+            t += config.n_rollout_threads               
             episode_reward += rewards 
-            # DOS_step, DOA_step = env.dos_and_doa_one_episode(x=env.p[:, start_stop_num[1]], h=env.heading[:, start_stop_num[1]], N=env.num_prey, D=np.sqrt(2))
-            # print("DOS_step:", DOS_step, "DOA_step:", DOA_step)
+
         for _ in range(30):    
             maddpg.prep_training(device='cpu')  
             for a_i in range(maddpg.nagents):
@@ -135,32 +116,24 @@ def run(config):
                     maddpg.update(obs_sample, acs_sample, rews_sample, next_obs_sample, dones_sample, a_i, logger=logger)     # parameter update 
             maddpg.update_all_targets()
             maddpg.prep_rollouts(device='cpu')    
-        print("reward", episode_reward)
+        # print("reward", episode_reward)
         DOS_epi, DOA_epi = env.dos_and_doa(x=p_store[:, start_stop_num[1], :], h=h_store[:, start_stop_num[1], :], T=config.episode_length, N=env.num_prey, D=np.sqrt(2))
         if ep_i % 10 == 0:
             print("DOS_episode:", DOS_epi, "DOA_episode:", DOA_epi)
 
         maddpg.noise = max(0.05, maddpg.noise-5e-5)
         maddpg.epsilon = max(0.05, maddpg.epsilon-5e-5)
-        # maddpg.noise = max(0.05, maddpg.noise-5e-5)
 
         logger.add_scalar('DOS_epi', DOS_epi, global_step=ep_i)
         logger.add_scalar('DOA_epi', DOA_epi, global_step=ep_i)
 
-
-        # ep_rews = [buffer.get_average_rewards(
-        #         config.episode_length * config.n_rollout_threads) for buffer in buffer_total]   
-        # for a_i, a_ep_rew in enumerate(ep_rews):
-        #     print(a_ep_rew)
-        #     logger.add_scalar('agent%i/mean_episode_rewards' % a_i, a_ep_rew, ep_i)
         if ep_i % config.save_interval < config.n_rollout_threads:   
             os.makedirs(run_dir / 'incremental', exist_ok=True)
             maddpg.save(run_dir / 'incremental' / ('model_ep%i.pt' % (ep_i + 1)))
             maddpg.save(run_dir / 'model.pt')
 
     maddpg.save(run_dir / 'model.pt')
-
-    # env.close()       
+     
     logger.export_scalars_to_json(str(log_dir / 'summary.json'))
     logger.close()
 
@@ -194,8 +167,6 @@ if __name__ == '__main__':
     parser.add_argument("--adversary_alg",
                         default="MADDPG", type=str,
                         choices=['MADDPG', 'DDPG'])
-    # parser.add_argument("--discrete_action",
-    #                     action='store_true')
     
     config = parser.parse_args()
 
