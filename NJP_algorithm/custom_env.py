@@ -12,8 +12,6 @@ class MyObs(gym.ObservationWrapper):
 
     def __init__(self, env):
         super().__init__(env)
-        # print("using MyObs")
-        # print(env.n_p+env.n_e)
         self.observation_space = spaces.Box(shape=(55,env.n_p+env.n_e), low=-np.inf, high=np.inf)
 
     def observation(self, obs):
@@ -29,10 +27,6 @@ class MyObs(gym.ObservationWrapper):
 
 
 class MyReward(gym.RewardWrapper):
-    
-    # def __init__(self, env):
-    #     super().__init__(env)
-    #     print("using MyReward")
 
     def reward(self, reward):
         r"""Example::
