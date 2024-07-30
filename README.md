@@ -136,6 +136,18 @@ To train your own network, run `main.py` in NJP_algorithm folder. You can also c
 
 Then your models will be loaded in models folder. To visualize your models effect, run `testmodel.py` in NJP_algorithm folder.
 
+A trained model will be presented as follows:
+<table>
+  <tr>
+    <td><img src="example_pps/images1.gif" width="100%" alt="Cartesian Mode"/></td>
+    <td><img src="example_pps/images2.gif" width="100%" alt="Polar Mode"/></td>
+  </tr>
+  <tr>
+    <td align="center">Cartesian Mode</td>
+    <td align="center">Polar Mode</td>
+  </tr>
+</table>
+
 ## Parameter List
 
 Below is a list of the parameters that can be customized:
