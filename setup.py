@@ -45,7 +45,8 @@ setup(
     install_requires=[
         "numpy==1.18.0",
         "cloudpickle>=1.2.0",
-        "setuptools==57.5.0"
+        "setuptools==57.5.0",
+        "pyglet==1.5.27"
     ],
     extras_require=extras,
     package_data={
