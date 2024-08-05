@@ -11,7 +11,7 @@ from version import VERSION
 extras = {
     "atari": ["atari-py==0.2.6", "opencv-python>=3."],
     "box2d": ["box2d-py~=2.3.5", "pyglet>=1.4.0"],
-    "classic_control": ["pyglet>=1.4.0"],
+    "classic_control": ["pyglet==1.5.27"],
     "mujoco": ["mujoco_py>=1.50, <2.0"],
     "robotics": ["mujoco_py>=1.50, <2.0"],
     "toy_text": ["scipy>=1.4.1"],
@@ -43,7 +43,7 @@ setup(
     packages=[package for package in find_packages() if package.startswith("gym")],
     zip_safe=False,
     install_requires=[
-        "numpy>=1.18.0",
+        "numpy==1.18.0",
         "cloudpickle>=1.2.0",
     ],
     extras_require=extras,
