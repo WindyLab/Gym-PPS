@@ -139,12 +139,12 @@ Then your models will be loaded in models folder. To visualize your models effec
 A trained model will be presented as follows:
 <table>
   <tr>
-    <td><img src="example_pps/images1.gif" width="100%" alt="Cartesian Mode"/></td>
-    <td><img src="example_pps/images2.gif" width="100%" alt="Polar Mode"/></td>
+    <td><img src="example_pps/after_evolution.gif" width="100%" alt="After Evolution"/></td>
+    <td><img src="example_pps/confuse_effect.gif" width="100%" alt="Confuse Effect"/></td>
   </tr>
   <tr>
-    <td align="center">Cartesian Mode</td>
-    <td align="center">Polar Mode</td>
+    <td align="center">After Evolution</td>
+    <td align="center">Confuse Effect</td>
   </tr>
 </table>
 
