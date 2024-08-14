@@ -1,6 +1,22 @@
 ## Gym-PPS
+<p align="center">
+<a href="https://iopscience.iop.org/article/10.1088/1367-2630/acf33a">
+    <img src="https://img.shields.io/badge/arXiv-paper?style=socia&logo=googledocv&logoColor=white&labelColor=grey&color=blue"></a>
+<a href="https://arxiv.org/abs/2308.12624">
+  <img src="https://img.shields.io/badge/Paper-blue?logo=arxiv&logoColor=white&labelColor=grey&color=blue"></a>
+  
+<a href="https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity">
+  <img src="https://img.shields.io/badge/Maintained%3F-yes-green.svg"></a>
+<a href="https://juleskreuer.eu/citation-badge">
+  <img src="https://api.juleskreuer.eu/citation-badge.php?doi=10.1088/1367-2630/acf33a/"></a>
 
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity) [![Citation Badge](https://api.juleskreuer.eu/citation-badge.php?doi=10.1088/1367-2630/acf33a)](https://juleskreuer.eu/citation-badge/) <a href="https://www.youtube.com/watch?v=Gt9v7cN6FII"><img src="https://img.shields.io/badge/Youtube-blue?logo=youtube&logoColor=white&labelColor=grey&color=blue"></a> [![bilibili](https://img.shields.io/badge/dynamic/json?color=ff69b4&label=bilibili&query=data.stat.view&url=https%3A%2F%2Fapi.bilibili.com%2Fx%2Fweb-interface%2Fview%3Fbvid%3DBV1zp4y1772H)](https://www.bilibili.com/video/BV1zp4y1772H/)
+<a href="https://www.youtube.com/watch?v=Gt9v7cN6FII">
+<img src="https://img.shields.io/badge/Youtube-blue?logo=youtube&logoColor=white&labelColor=grey&color=blue">
+</a>
+<a href="https://www.bilibili.com/video/BV1zp4y1772H/">
+  <img src="https://img.shields.io/badge/dynamic/json?color=ff69b4&label=bilibili&query=data.stat.view&url=https%3A%2F%2Fapi.bilibili.com%2Fx%2Fweb-interface%2Fview%3Fbvid%3DBV1zp4y1772H"></a>
+
+</p>
 
 Gym-PPS is a lightweight Predator-Prey Swarm environment seamlessly integrated into the standard Gym library. Its purpose is to provide a convenient platform for rapidly testing reinforcement learning algorithms and control algorithms utilized in guidance, swarming, or formation tasks. The Bilibili video has reached a milestone of [![bilibili](https://img.shields.io/badge/dynamic/json?color=ff69b4&label=bilibili&query=data.stat.view&url=https%3A%2F%2Fapi.bilibili.com%2Fx%2Fweb-interface%2Fview%3Fbvid%3DBV1zp4y1772H)](https://www.bilibili.com/video/BV1zp4y1772H/) views.
 
