@@ -19,6 +19,16 @@ Gym-PPS is a lightweight **Predator-Prey Swarm (PPS)** environment fully compati
 </table>
 
 
+## Changelog
+
+20260609: add tutorial example: 1v1 Predator-prey Game, Improve RL algorithm.
+
+20251219: add tutorial examples: how to use PPS and implement RL algorithm; improve RL algorithm. 
+
+20240805: update RL algorithm; update PPS gym environment.
+
+20240501: Create the project **Predator-Prey Swarm.**
+
 
 
 ## Usage
