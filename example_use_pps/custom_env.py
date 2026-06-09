@@ -7,13 +7,14 @@ from gym.wrappers import CustomObservation, CustomReward, CustomAction
 """Define your own Observation and Reward in this script:
 You may use the following properties to define your observation/reward functions:
 self.env.p, dp, ddp, theta, heading, d_b2b_center, is_collide_b2b, energy
+For detailed example, see "example_algorithm_1vs1" or "example_algorithm_NJP"
 """
 
 class MyObs(CustomObservation):
 
     # def __init__(self, env, args):
     #     super().__init__(env, args)
-    #     self.observation_space = spaces.Box(shape=(2, env.n_p+env.n_e), low=-np.inf, high=np.inf)
+    #     self.observation_space = spaces.Box(shape=(2, env.n_p+env.n_e), low=-np.inf, high=np.inf, dtype=np.float32)
 
     def observation(self, obs):
         r"""Example::

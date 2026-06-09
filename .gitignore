@@ -31,6 +31,9 @@ rllab_mujoco
 
 tutorial/*.html
 
+.codex/
+.agents/
+
 # IDE files
 .eggs
 .tox
@@ -39,3 +42,5 @@ tutorial/*.html
 .idea
 vizdoom.ini
 .vscode/
+
+example_algorithm_NJP_legacy/

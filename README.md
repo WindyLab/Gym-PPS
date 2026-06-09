@@ -10,13 +10,14 @@ Gym-PPS is a lightweight **Predator-Prey Swarm (PPS)** environment fully compati
       <img src="example_use_pps/sample1.gif" alt="Fig1" width="100%">
     </td>
     <td align="center" style="width: 33.3%;">
-      <img src="example_NJP_algorithm/animation.gif" alt="Fig2" width="100%">
+      <img src="example_algorithm_NJP/NJP.gif" alt="Fig2" width="100%">
     </td>
      <td align="center" style="width: 33.3%;">
       <img src="example_use_pps/sample2.gif" alt="Fig3" width="100%">
     </td>
   </tr>
 </table>
+
 
 
 
@@ -209,6 +210,52 @@ class MyEnv(PredatorPreySwarmCustomizer):
 
 
 
+## Example: 1v1 Predator-Prey Game
+
+This repository includes a minimal DDPG example for a 1v1 predator-prey task. In the default setting, the prey remains static and the predator learns to catch the prey.
+
+First, make sure `torch` is installed in your `.venv-pps` environment:
+
+```bash
+pip install torch
+```
+
+Then train the predator:
+
+```bash
+cd example_algorithm_1vs1
+python train.py
+```
+
+Once training finishes, which should only take a few moments, evaluate the learned policy:
+
+```bash
+python eval.py
+```
+
+The following examples show the trained predator chasing a static prey and a randomly moving prey:
+
+<table style="width: 60%;">
+  <tr>
+    <td align="center" style="width: 50%;">
+      <img src="example_algorithm_1vs1/1v1_static.gif" alt="Fig1" width="100%">
+    </td>
+    <td align="center" style="width: 50%;">
+      <img src="example_algorithm_1vs1/1v1_random.gif" alt="Fig2" width="100%">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">Catching a static prey</td>
+    <td align="center">Catching a randomly moving prey</td>
+  </tr>
+</table>
+
+
+
+For an additional challenge, set `"escaper_strategy"` to `"random"` in `example_algorithm_1vs1/custom_param.json`, retrain the policy, and check whether the predator can still catch the prey, or performs better.
+
+
+
 ## Implementation of NJP algorithm
 
 This repository also provides a reference implementation of the MARL algorithm for the PPS environment, adapted from “Predator-prey survival pressure is sufficient to evolve swarming behaviors” *(New Journal of Physics).* 
@@ -222,31 +269,53 @@ pip install torch
 Then run
 
 ```bash
-cd example_NJP_algorithm
-python main.py
+cd example_algorithm_NJP
+python train.py
 ```
 
 The training should start immediately. Go grab a coffee, but make it an espresso because this won't take long. Afterward, increase `n_e` up to `25`  in `custom_param.json`, then run 
 
 ```bash
-python evaluate.py
+python eval.py
 ```
 
 to see the prey agents embrace the swarm mind:
 
-<div style="text-align: center;">
-<table style="width: 30%;">
+<table style="width: 60%;">
   <tr>
-    <td><img src="example_NJP_algorithm/animation.gif" width="100%" alt="Training Result" /></td>
+    <td align="center" style="width: 50%;">
+      <img src="example_algorithm_NJP/NJP.gif" alt="Fig1" width="100%">
+    </td>
+    <td align="center" style="width: 50%;">
+      <img src="example_algorithm_NJP/NJP2.gif" alt="Fig2" width="100%">
+    </td>
   </tr>
   <tr>
-    <td align="center">Training Result</td>
+    <td align="center">After Training</td>
+    <td align="center">After Training</td>
   </tr>
 </table>
-</div>
+
 
 
 We hope you enjoy this project. Should you find it helpful for your research, we would appreciate your citation of the following paper, which helps other researchers find us.
+
+
+
+## Save the Frames
+
+Gym-PPS can save rendered frames as PNG files during evaluation or visualization. Enable frame saving in your `custom_param.json`:
+
+```json
+{
+    "save_frame": true,
+    "frame_dir": "./frames"
+}
+```
+
+Frames are written when `env.render(mode="human")` is called. After running your script, the selected `frame_dir` will contain numbered PNG files such as `0.png`, `1.png`, and `2.png`.
+
+
 
 
 

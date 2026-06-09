@@ -1,0 +1,10 @@
+{
+    "dynamics_mode": "Polar",
+    "n_p": 1,
+    "n_e": 1,
+    "pursuer_strategy": "input",
+    "escaper_strategy": "random",
+    "is_periodic": true,
+    "render_traj": true,
+    "save_frame": false
+}
