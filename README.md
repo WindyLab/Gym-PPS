@@ -240,7 +240,7 @@ python train.py
 Once training finishes, which should only take a few moments, evaluate the learned policy:
 
 ```bash
-python eval.py
+python eval.py --render
 ```
 
 The following examples show the trained predator chasing a static prey and a randomly moving prey:
@@ -286,7 +286,7 @@ python train.py
 The training should start immediately. Go grab a coffee, but make it an espresso because this won't take long. Afterward, increase `n_e` up to `25`  in `custom_param.json`, then run 
 
 ```bash
-python eval.py
+python eval.py --render
 ```
 
 to see the prey agents embrace the swarm mind:
