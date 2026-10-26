@@ -1,6 +1,20 @@
 import numpy as np
 
 
+def get_dist_b2b_batch(positions, half_width, periodic, pair_sizes):
+    """批量计算粒子间距离，保留原生函数的周期边界和接触判定规则。"""
+    # 与原生实现使用相同精度，避免接触阈值附近因类型转换改变碰撞结果。
+    positions = np.asarray(positions, dtype=np.float64)
+    delta = positions[:, :, None] - positions[:, None, :]
+    if periodic:
+        delta = make_periodic(delta, half_width)
+    center = np.sqrt(delta[0] ** 2 + delta[1] ** 2)
+    edge = np.abs(center - pair_sizes)
+    # 恰好接触不算碰撞，保持原实现的严格小于判断。
+    colliding = center < pair_sizes
+    return center, edge, colliding
+
+
 def make_periodic(x:np.array, L:float) -> np.array:
     x[x > L] -= 2 * L 
     x[x < -L] += 2 * L
@@ -50,3 +64,29 @@ def get_focused(Pos, Vel, norm_threshold, width, remove_self):
     target_Pos[:, :until_idx] = Pos[:, :until_idx] 
     target_Vel[:, :until_idx] = Vel[:, :until_idx]
     return target_Pos, target_Vel   
+
+
+def get_focused_batch(positions, velocities, norm_threshold, width, remove_self):
+    """输入轴为 (观察者, 候选邻居, xy)，输出固定 width 个邻居，不足时补零。"""
+    shape = (positions.shape[0], width, 2)
+    target_positions = np.zeros(shape)
+    target_velocities = np.zeros(shape)
+    norms = np.sqrt(positions[:, :, 0] ** 2 + positions[:, :, 1] ** 2)
+    order = np.argsort(norms, axis=1)
+    # 同种邻居沿用 get_focused 的规则：排序后丢弃第一项，而非按个体编号排除。
+    # 即使多个距离并列为零，也必须保留这一规则，才能兼容原观测结果。
+    offset = int(remove_self)
+    selected = order[:, offset:offset + width]
+    count = selected.shape[1]
+    if count:
+        # 距离严格小于视野阈值才可见；恰好位于边界的个体也按原规则补零。
+        visible = np.take_along_axis(norms, selected, axis=1) < norm_threshold
+        # 增加坐标轴以便同时提取 xy 两个分量，位置与速度使用相同邻居索引。
+        selected = selected[:, :, None]
+        target_positions[:, :count] = np.where(
+            visible[:, :, None], np.take_along_axis(positions, selected, axis=1), 0.0,
+        )
+        target_velocities[:, :count] = np.where(
+            visible[:, :, None], np.take_along_axis(velocities, selected, axis=1), 0.0,
+        )
+    return target_positions, target_velocities
