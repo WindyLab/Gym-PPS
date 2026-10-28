@@ -76,13 +76,9 @@ def evaluate(args):
             if args.render:
                 env.render(mode="human")
 
-            predator_actions = np.zeros((act_dim, env.n_p), dtype=np.float32)
-            for pred_i in range(env.n_p):
-                predator_actions[:, pred_i] = predator_agent.act(predator_states[pred_i], noise_std=0.0)
-
-            prey_actions = np.zeros((act_dim, env.n_e), dtype=np.float32)
-            for prey_i in range(env.n_e):
-                prey_actions[:, prey_i] = prey_agent.act(prey_states[prey_i], noise_std=0.0)
+            # 每个物种批量推理一次，再转成环境要求的 (动作维度, 个体数)。
+            predator_actions = predator_agent.act_batch(predator_states).T
+            prey_actions = prey_agent.act_batch(prey_states).T
 
             action = {"predator": predator_actions, "prey": prey_actions}
             next_obs, _, _, _ = env.step(action)

@@ -26,6 +26,11 @@ def make_env():
 
 
 def train(args):
+    # 在创建环境前校验图执行依赖，避免错误配置启动训练后才失败。
+    if args.cuda_graph and (not args.fused_adam or not torch.cuda.is_available()):
+        raise ValueError("cuda_graph requires CUDA and --fused_adam")
+    if args.render_interval < 0:
+        raise ValueError("render_interval must be nonnegative")
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
@@ -44,6 +49,8 @@ def train(args):
         gamma=args.gamma,
         tau=args.tau,
         device=device,
+        fused_adam=args.fused_adam,
+        cuda_graph=args.cuda_graph,
     )
     prey_agent = DDPGAgent(
         obs_dim=obs_dim,
@@ -54,6 +61,8 @@ def train(args):
         gamma=args.gamma,
         tau=args.tau,
         device=device,
+        fused_adam=args.fused_adam,
+        cuda_graph=args.cuda_graph,
     )
     predator_replay = ReplayBuffer(args.buffer_size, obs_dim, act_dim)
     prey_replay = ReplayBuffer(args.buffer_size, obs_dim, act_dim)
@@ -75,25 +84,20 @@ def train(args):
         min_distance = float(np.min(pred_distances))
         caught_once = False
         noise = max(args.noise_min, args.noise * (1.0 - episode / args.episodes))
-        render_episode = args.render or episode % 20 == 0
+        render_episode = args.render or (args.render_interval > 0 and episode % args.render_interval == 0)
 
         for _ in range(args.episode_length):
             if render_episode:
                 env.render(mode="human")
 
-            predator_actions = np.zeros((act_dim, env.n_p), dtype=np.float32)
-            for pred_i in range(env.n_p):
-                if total_steps < args.start_steps:
-                    predator_actions[:, pred_i] = np.random.uniform(-1.0, 1.0, size=act_dim)
-                else:
-                    predator_actions[:, pred_i] = predator_agent.act(predator_states[pred_i], noise_std=noise)
-
-            prey_actions = np.zeros((act_dim, env.n_e), dtype=np.float32)
-            for prey_i in range(env.n_e):
-                if total_steps < args.start_steps:
-                    prey_actions[:, prey_i] = np.random.uniform(-1.0, 1.0, size=act_dim)
-                else:
-                    prey_actions[:, prey_i] = prey_agent.act(prey_states[prey_i], noise_std=noise)
+            if total_steps < args.start_steps:
+                # 按个体排列随机数，保持原逐个体采样顺序。
+                predator_actions = np.random.uniform(-1.0, 1.0, size=(env.n_p, act_dim)).astype(np.float32).T
+                prey_actions = np.random.uniform(-1.0, 1.0, size=(env.n_e, act_dim)).astype(np.float32).T
+            else:
+                # 每个物种只推理一次，再转成环境要求的 (动作维度, 个体数)。
+                predator_actions = predator_agent.act_batch(predator_states, noise_std=noise).T
+                prey_actions = prey_agent.act_batch(prey_states, noise_std=noise).T
 
             action = {"predator": predator_actions, "prey": prey_actions}
             next_obs, rewards, _, _ = env.step(action)
@@ -104,22 +108,11 @@ def train(args):
             next_predator_states = next_obs["predator"]
             next_prey_states = next_obs["prey"]
             caught_once = caught_once or caught
-            for pred_i in range(env.n_p):
-                predator_replay.push(
-                    predator_states[pred_i],
-                    predator_actions[:, pred_i],
-                    pred_rewards[pred_i],
-                    next_predator_states[pred_i],
-                    False,
-                )
-            for prey_i in range(env.n_e):
-                prey_replay.push(
-                    prey_states[prey_i],
-                    prey_actions[:, prey_i],
-                    prey_rewards[prey_i],
-                    next_prey_states[prey_i],
-                    False,
-                )
+            # 按原个体顺序整批写入，减少逐个体调用，抽样和终止标记保持原样。
+            predator_replay.push_batch(predator_states, predator_actions.T,
+                                       pred_rewards, next_predator_states)
+            prey_replay.push_batch(prey_states, prey_actions.T,
+                                  prey_rewards, next_prey_states)
 
             predator_states = next_predator_states
             prey_states = next_prey_states
@@ -131,9 +124,9 @@ def train(args):
             if total_steps >= args.start_steps:
                 for _ in range(args.updates_per_step):
                     if len(predator_replay) >= args.batch_size:
-                        predator_agent.update(predator_replay, args.batch_size)
+                        predator_agent.update(predator_replay, args.batch_size, return_losses=False)
                     if len(prey_replay) >= args.batch_size:
-                        prey_agent.update(prey_replay, args.batch_size)
+                        prey_agent.update(prey_replay, args.batch_size, return_losses=False)
 
         best_min_distance = min(best_min_distance, min_distance)
         if episode % 10 == 0 or caught_once:
@@ -152,6 +145,10 @@ def train(args):
         os.path.join(os.path.dirname(__file__), args.model_path),
     )
     env.close()
+    if args.cuda_graph:
+        print(f"CUDA Graph: predator={predator_agent.cuda_graph_status}, "
+              f"prey={prey_agent.cuda_graph_status}, "
+              f"capture_seconds={predator_agent.graph_capture_seconds + prey_agent.graph_capture_seconds:.3f}")
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ import gym
 from gym import error, spaces, utils
 from .putils import *
 from gym.utils import *
+from .putils.putils import get_dist_b2b_batch
 import numpy as np
 import random
 
@@ -76,6 +77,8 @@ class PredatorPreySwarmEnv(PredatorPreySwarmEnvProp):
     def __reinit__(self):
         self._n_pe = self._n_p + self._n_e
         self._n_peo = self._n_p + self._n_e + self._n_o
+        self._collision_pair_indices = None
+        self._observation_workspace = None
         self.observation_space = self._get_observation_space()  
         self.action_space = self._get_action_space()   
         self._m = get_mass(self._m_p, self._m_e, self._m_o, self._n_p, self._n_e, self._n_o)  
@@ -116,7 +119,7 @@ class PredatorPreySwarmEnv(PredatorPreySwarmEnvProp):
             self._p = np.random.uniform(-1+max_size, 1-max_size, (2, self._n_peo))   # Initialize self._p
             if self._obstacles_is_constant:
                 self._p[:, self._n_pe:self._n_peo] = self._p_o
-            self._d_b2b_center, _, _is_collide_b2b = get_dist_b2b(self._p, self._L, self._is_periodic, self._sizes)
+            self._d_b2b_center, _, _is_collide_b2b = get_dist_b2b_batch(self._p, self._L, self._is_periodic, self._sizes)
             if _is_collide_b2b.sum() == 0:
                 break
             if respawn_time == max_respawn_times-1:
@@ -141,76 +144,55 @@ class PredatorPreySwarmEnv(PredatorPreySwarmEnvProp):
 
 
     def _get_obs(self):
-
-        self.obs = np.zeros(self.observation_space.shape)   
-
-        for i in range(self._n_p):
-            ''' For pursuers
-
-            If in Cartesian mode:
-            [ agent's own pos., vel.,
-              relative pos. of observed pursuers,
-              relative pos. of observed escapers  ]
-
-            If in Polar mode:
-            [ agent's own pos., vel., heading,
-              relative pos. and headings of observed pursuers,
-              relative pos. and headings of observed escapers ]
-
-            Observation model is dependent on both metric and topological distance.
-            Metric distance means: an agent can only perceive others in its perception range which is assumed to be a disk with a pre-defined radius.
-            Topological distancemeans: how many at most an agent can perceive concurrently rather than how far away.
-            '''
-            relPos_p2p = self._p[:, :self._n_p] - self._p[:,[i]]
-            if self._is_periodic: relPos_p2p = make_periodic( relPos_p2p, self._L )
-            relVel_p2p = self._dp[:,:self._n_p] - self._dp[:,[i]] if self._dynamics_mode == 'Cartesian' else self._heading[:, :self._n_p] - self._heading[:, [i]]
-            relPos_p2p, relVel_p2p = get_focused(relPos_p2p, relVel_p2p, self._FoV_p, self._topo_n_p2p, True)  
-           
-            relPos_p2e = self._p[:, self._n_p:self._n_pe] - self._p[:,[i]]
-            if self._is_periodic: relPos_p2e = make_periodic( relPos_p2e, self._L )
-            relVel_p2e = self._dp[:,self._n_p:self._n_pe] - self._dp[:,[i]] if self._dynamics_mode == 'Cartesian' else self._heading[:,self._n_p:self._n_pe] - self._heading[:,[i]]
-            relPos_p2e, relVel_p2e = get_focused(relPos_p2e, relVel_p2e, self._FoV_p, self._topo_n_p2e, False) 
-          
-            obs_pursuer_pos = np.concatenate((self._p[:, [i]], relPos_p2p, relPos_p2e), axis=1)
-            obs_pursuer_vel = np.concatenate((self._dp[:, [i]], relVel_p2p, relVel_p2e), axis=1)
-            obs_pursuer = np.concatenate((obs_pursuer_pos, obs_pursuer_vel), axis=0)  # (4, n_peo+1) FIXME: only suitable for no obstacles
-
-            if self._dynamics_mode == 'Cartesian':
-                self.obs[:self.obs_dim_pursuer-1, i] = obs_pursuer.T.reshape(-1)       
-                self.obs[self.obs_dim_pursuer-1, i] = 2/self.max_energy_p * self._energy[[0],i] - 1  
-            elif self._dynamics_mode == 'Polar':
-                self.obs[:self.obs_dim_pursuer-3, i] = obs_pursuer.T.reshape(-1)       
-                self.obs[self.obs_dim_pursuer-3, i] = 2/self.max_energy_p * self._energy[[0],i] - 1  
-                self.obs[self.obs_dim_pursuer-2:self.obs_dim_pursuer, i] = self._heading[:,i]
-
-        for i in range(self._n_p, self._n_pe):
-            ''' For prey
-            Same with predators'
-            '''
-            relPos_e2p = self._p[:, :self._n_p] - self._p[:,[i]]  
-            if self._is_periodic: relPos_e2p = make_periodic( relPos_e2p, self._L )
-            relVel_e2p = self._dp[:, :self._n_p] - self._dp[:,[i]] if self._dynamics_mode == 'Cartesian' else self._heading[:, :self._n_p] - self._heading[:,[i]]
-            relPos_e2p, relVel_e2p = get_focused(relPos_e2p, relVel_e2p, self._FoV_e, self._topo_n_e2p, False) 
-            
-            relPos_e2e = self._p[:, self._n_p:self._n_pe] - self._p[:,[i]]
-            if self._is_periodic: relPos_e2e = make_periodic( relPos_e2e, self._L )
-            relVel_e2e = self._dp[:, self._n_p:self._n_pe] - self._dp[:,[i]] if self._dynamics_mode == 'Cartesian' else self._heading[:, self._n_p:self._n_pe] - self._heading[:,[i]]
-            relPos_e2e, relVel_e2e = get_focused(relPos_e2e, relVel_e2e, self._FoV_e, self._topo_n_e2e, True)  
-
-            obs_escaper_pos = np.concatenate((self._p[:, [i]], relPos_e2p, relPos_e2e), axis=1)
-            obs_escaper_vel = np.concatenate((self._dp[:, [i]], relVel_e2p, relVel_e2e), axis=1)
-            obs_escaper = np.concatenate((obs_escaper_pos, obs_escaper_vel), axis=0) 
-
-            if self._dynamics_mode == 'Cartesian':
-                self.obs[:self.obs_dim_escaper-1, i] = obs_escaper.T.reshape(-1)       
-                self.obs[self.obs_dim_escaper-1,i] = 2/self.max_energy_e * self._energy[[0],i] - 1   
-            elif self._dynamics_mode == 'Polar':
-                self.obs[:self.obs_dim_escaper-3, i] = obs_escaper.T.reshape(-1)       
-                self.obs[self.obs_dim_escaper-3, i] = 2/self.max_energy_e * self._energy[[0],i] - 1  
-                self.obs[self.obs_dim_escaper-2:self.obs_dim_escaper, i] = self._heading[:,i] 
-
+        """按物种批量生成观测，保持原有邻居顺序、特征布局和零填充规则。"""
+        self.obs = np.zeros(self.observation_space.shape)
+        # 只为捕食者和猎物构造观测；障碍物不作为观察者或邻居参与策略输入。
+        positions = self._p[:, :self._n_pe].T
+        velocities = self._dp[:, :self._n_pe].T
+        # 自身特征始终使用真实速度；邻居相对量在 Polar 模式下改用朝向差。
+        headings = velocities if self._dynamics_mode == 'Cartesian' else self._heading[:, :self._n_pe].T
+        # 相对量的轴顺序为 (观察者, 候选邻居, xy)，方向为“邻居减自身”。
+        # 复用环境私有的相对状态数组；返回的观测仍单独分配，避免覆盖经验池中的旧观测。
+        key = (self._n_pe, positions.dtype.str, headings.dtype.str)
+        workspace = getattr(self, '_observation_workspace', None)
+        if workspace is None or workspace[0] != key:
+            shape = (self._n_pe, self._n_pe, 2)
+            workspace = (key, np.empty(shape, dtype=positions.dtype),
+                         np.empty(shape, dtype=headings.dtype))
+            self._observation_workspace = workspace
+        relative_positions, relative_velocities = workspace[1:]
+        np.subtract(positions[None, :, :], positions[:, None, :], out=relative_positions)
+        if self._is_periodic:
+            relative_positions = make_periodic(relative_positions, self._L)
+        np.subtract(headings[None, :, :], headings[:, None, :], out=relative_velocities)
+        own_state = np.concatenate((positions, velocities), axis=1)
+        populations = (slice(0, self._n_p), slice(self._n_p, self._n_pe))
+        groups = (
+            (self._FoV_p, (self._topo_n_p2p, self._topo_n_p2e), self.max_energy_p),
+            (self._FoV_e, (self._topo_n_e2p, self._topo_n_e2e), self.max_energy_e),
+        )
+        for species, (observers, (field_of_view, widths, max_energy)) in enumerate(zip(populations, groups)):
+            count = observers.stop - observers.start
+            if count == 0:
+                continue
+            features = [own_state[observers, None, :]]
+            for neighbor_species, (neighbors, width) in enumerate(zip(populations, widths)):
+                position, velocity = get_focused_batch(
+                    relative_positions[observers, neighbors],
+                    relative_velocities[observers, neighbors],
+                    field_of_view, width, species == neighbor_species,
+                )
+                features.append(np.concatenate((position, velocity), axis=2))
+            # 依次排列自身、捕食者邻居、猎物邻居，每个条目先放二维位置量，再放二维运动量。
+            # 最后转回 (特征维度, 个体数)，与原逐个体实现和既有策略权重兼容。
+            features = np.concatenate(features, axis=1).reshape(count, -1).T
+            energy_row = features.shape[0]
+            self.obs[:energy_row, observers] = features
+            self.obs[energy_row, observers] = 2 / max_energy * self._energy[0, observers] - 1
+            if self._dynamics_mode == 'Polar':
+                self.obs[energy_row + 1:energy_row + 3, observers] = self._heading[:, observers]
         return self.obs
-      
+
 
     def _get_reward(self, a):
 
@@ -288,6 +270,34 @@ class PredatorPreySwarmEnv(PredatorPreySwarmEnvProp):
         return np.array( [None, None, None] ).reshape(3,1)
 
 
+    def _get_ball_collision_force(self):
+        # 只计算严格下三角中的粒子对，排除自身；反向力由作用力与反作用力关系填充。
+        # 粒子数不变时复用配对索引，仅对已判定接触的粒子计算力。
+        cached = getattr(self, '_collision_pair_indices', None)
+        if cached is None or cached[0] != self._n_peo:
+            cached = (self._n_peo, *np.tril_indices(self._n_peo, k=-1))
+            self._collision_pair_indices = cached
+        rows, columns = cached[1:]
+        contact = self._is_collide_b2b[rows, columns]
+        rows, columns = rows[contact], columns[contact]
+        delta = self._p[:, columns] - self._p[:, rows]
+        if self._is_periodic:
+            delta = make_periodic(delta, self._L)
+        direction = delta / self._d_b2b_center[rows, columns]
+        pair_force = (
+            self._is_collide_b2b[rows, columns]
+            * self.d_b2b_edge[rows, columns]
+            * self._k_ball
+            * (-direction)
+        )
+        # 保留 (受力粒子, xy, 施力粒子) 布局，按原邻居顺序求和，避免浮点求和
+        # 次序变化导致长时间轨迹偏离；此处粒子也包含障碍物。
+        forces = np.zeros((self._n_peo, 2, self._n_peo))
+        forces[rows, :, columns] = pair_force.T
+        forces[columns, :, rows] = -pair_force.T
+        return forces.sum(axis=2).T
+
+
     def step(self, a):  
         for _ in range(self._n_frames): 
             if self._dynamics_mode == 'Polar':  
@@ -295,18 +305,8 @@ class PredatorPreySwarmEnv(PredatorPreySwarmEnvProp):
                 a[0, self._n_p:self._n_pe] *= self._angle_e_max
                 a[1, :self._n_p] =          (self._linAcc_p_max-self._linAcc_p_min)/2 * a[1,:self._n_p] +          (self._linAcc_p_max+self._linAcc_p_min)/2 
                 a[1, self._n_p:self._n_pe] = (self._linAcc_e_max-self._linAcc_e_min)/2 * a[1,self._n_p:self._n_pe] + (self._linAcc_e_max+self._linAcc_e_min)/2 
-            self._d_b2b_center, self.d_b2b_edge, self._is_collide_b2b = get_dist_b2b(self._p, self._L, self._is_periodic, self._sizes)
-            sf_b2b_all = np.zeros((2*self._n_peo, self._n_peo)) 
-            for i in range(self._n_peo):
-                for j in range(i):
-                    delta = self._p[:,j]-self._p[:,i]
-                    if self._is_periodic:
-                        delta = make_periodic(delta, self._L)
-                    dir = delta / self._d_b2b_center[i,j]
-                    sf_b2b_all[2*i:2*(i+1),j] = self._is_collide_b2b[i,j] * self.d_b2b_edge[i,j] * self._k_ball * (-dir)
-                    sf_b2b_all[2*j:2*(j+1),i] = - sf_b2b_all[2*i:2*(i+1),j]  
-                   
-            sf_b2b = np.sum(sf_b2b_all, axis=1, keepdims=True).reshape(self._n_peo,2).T   
+            self._d_b2b_center, self.d_b2b_edge, self._is_collide_b2b = get_dist_b2b_batch(self._p, self._L, self._is_periodic, self._sizes)
+            sf_b2b = self._get_ball_collision_force()
 
             if self._is_periodic == False:
                 self.d_b2w, self.is_collide_b2w = get_dist_b2w(self._p, self._size, self._L)
